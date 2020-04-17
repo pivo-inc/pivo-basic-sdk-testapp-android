@@ -59,7 +59,10 @@ dependencies {
      */
     implementation 'com.polidea.rxandroidble:rxandroidble:1.5.0'
 
-    implementation 'app.pivo.android.basicsdk:PivoBasicSdk:1.0.0'
+    implementation 'app.pivo.android.basicsdk:PivoBasicSdk:1.0.1'
+
+//    compile(name: 'pivobasicsdk-release', ext: 'aar')
+
 
     /**
      * Unit testing dependencies
