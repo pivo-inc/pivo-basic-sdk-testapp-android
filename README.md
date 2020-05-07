@@ -54,8 +54,7 @@ class App: Application()
 ```
 
 ## Report
-For major changes, please open an issue first to discuss what you would like to change.
-In case you encounter an issue during setting up the sdk, please contact us or open an issue.
+If you encounter an issue during setting up the sdk, please contact us at app@3i.ai or open an issue.
 ## License
 MIT License
 
