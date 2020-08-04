@@ -59,7 +59,7 @@ dependencies {
      */
     implementation 'com.polidea.rxandroidble:rxandroidble:1.5.0'
 
-    implementation 'app.pivo.android.basicsdk:PivoBasicSdk:1.0.1-alpha'
+    implementation 'app.pivo.android.basicsdk:PivoBasicSdk:1.0.0-beta'
 
 //    compile(name: 'pivobasicsdk-release', ext: 'aar')
 //    compile(name: 'prosdk-release', ext: 'aar')
