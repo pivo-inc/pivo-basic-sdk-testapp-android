@@ -32,7 +32,7 @@ class App: Application()
         val br: BufferedReader
         br = BufferedReader(InputStreamReader(inputStream))
         var line: String?=null
-        while (br.readLine().also({ line = it }) != null) {
+        while (br.readLine().also { line = it } != null) {
             str.append(line)
         }
         br.close()
