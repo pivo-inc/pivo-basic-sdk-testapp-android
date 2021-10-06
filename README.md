@@ -19,7 +19,7 @@ allprojects {
 
 ```groovy
 dependencies {
- implementation 'app.pivo.android.basicsdk:basicsdk:1.0.0'
+ implementation 'app.pivo.android.basicsdk:basicsdk:1.0.6'
  implementation 'com.polidea.rxandroidble:rxandroidble:1.5.0'
  /**
   * RxJava dependencies
