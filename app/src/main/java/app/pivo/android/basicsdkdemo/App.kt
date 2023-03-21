@@ -18,7 +18,6 @@ class App: Application()
         //initialize PivoSdk
         PivoSdk.init(this)
         PivoSdk.getInstance().unlockWithLicenseKey(getLicenseContent())
-
     }
 
     private fun getLicenseContent():String?{

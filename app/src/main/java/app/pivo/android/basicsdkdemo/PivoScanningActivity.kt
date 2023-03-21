@@ -2,6 +2,7 @@ package app.pivo.android.basicsdkdemo
 
 import android.Manifest
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -9,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nabinbhandari.android.permissions.PermissionHandler
 import com.nabinbhandari.android.permissions.Permissions
-import io.reactivex.functions.Consumer
 import app.pivo.android.basicsdk.PivoSdk
 import app.pivo.android.basicsdk.events.PivoEventBus
 import app.pivo.android.basicsdk.events.PivoEvent
@@ -19,11 +19,11 @@ class PivoScanningActivity : AppCompatActivity() {
 
     private val TAG = "MainActivity"
     private lateinit var resultAdapter: ScanResultsAdapter
+    private val sdkInstance = PivoSdk.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pivo_scanning)
-
 
         //initialize device scan adapter
         resultAdapter = ScanResultsAdapter()
@@ -32,7 +32,7 @@ class PivoScanningActivity : AppCompatActivity() {
             override fun onAdapterViewClick(view: View?) {
                 val scanResult = resultAdapter.getItemAtPosition(scan_results.getChildAdapterPosition(view!!))
                 if (scanResult!=null){
-                    PivoSdk.getInstance().connectTo(scanResult)
+                    sdkInstance.connectTo(scanResult)
                 }
             }
         })
@@ -50,7 +50,7 @@ class PivoScanningActivity : AppCompatActivity() {
         //cancel scanning button
         cancel_button.setOnClickListener {
             scanning_bar.visibility = View.INVISIBLE
-            PivoSdk.getInstance().stopScan()
+            sdkInstance.stopScan()
             resultAdapter.clearScanResults()
         }
     }
@@ -60,20 +60,22 @@ class PivoScanningActivity : AppCompatActivity() {
         super.onResume()
         //subscibe pivo connection events
         PivoEventBus.subscribe(
-            PivoEventBus.CONNECTION_COMPLETED, this, Consumer {
+            PivoEventBus.CONNECTION_COMPLETED, this
+        ) {
             scanning_bar.visibility = View.INVISIBLE
-            if (it is PivoEvent.ConnectionComplete){
+            if (it is PivoEvent.ConnectionComplete) {
                 Log.e(TAG, "CONNECTION_COMPLETED")
                 openController()
             }
-        })
+        }
         //subscribe to get scan device
         PivoEventBus.subscribe(
-            PivoEventBus.SCAN_DEVICE, this, Consumer {
-            if (it is PivoEvent.Scanning){
+            PivoEventBus.SCAN_DEVICE, this
+        ) {
+            if (it is PivoEvent.Scanning) {
                 resultAdapter.addScanResult(it.device)
             }
-        })
+        }
     }
 
     override fun onPause() {
@@ -90,19 +92,26 @@ class PivoScanningActivity : AppCompatActivity() {
     //check permissions if they're granted start scanning, otherwise ask to user to grant permissions
     private fun checkPermission(){// alternative Permission library Dexter
         Permissions.check(this,
-            permissionList, null, null,
+            permissionList.toTypedArray(), null, null,
             object : PermissionHandler() {
                 override fun onGranted() {
                     scanning_bar.visibility = View.VISIBLE
-                    PivoSdk.getInstance().scan()
+                    sdkInstance.scan()
                 }
             })
     }
-    //permissions which are required for bluetooth
-    private var permissionList = arrayOf(
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION,
-        Manifest.permission.BLUETOOTH,
-        Manifest.permission.BLUETOOTH_ADMIN)
 
+    //permissions which are required for bluetooth
+    private var permissionList = mutableListOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION
+    ).also {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
+            it.add(Manifest.permission.BLUETOOTH_SCAN)
+            it.add(Manifest.permission.BLUETOOTH_CONNECT)
+        } else {
+            it.add(Manifest.permission.BLUETOOTH)
+            it.add(Manifest.permission.BLUETOOTH_ADMIN)
+        }
+    }
 }
