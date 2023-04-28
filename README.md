@@ -22,7 +22,7 @@ dependencies {
     /**
      * Pivo pod controller dependencies
      */
-    implementation 'app.pivo.android.basicsdk:basicsdk:1.3.0'
+    implementation 'app.pivo.android.basicsdk:basicsdk:1.3.3'
 
     /**
      * RxJava dependencies
