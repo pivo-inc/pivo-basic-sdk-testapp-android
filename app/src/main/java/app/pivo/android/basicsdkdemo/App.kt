@@ -15,8 +15,6 @@ class App: Application()
     override fun onCreate() {
         super.onCreate()
 
-        //initialize PivoSdk
-        PivoSdk.init(this)
         PivoSdk.getInstance().unlockWithLicenseKey(getLicenseContent())
     }
 
