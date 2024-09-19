@@ -1,24 +1,28 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion "29.0.3"
+    compileSdk 35
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     defaultConfig {
         applicationId "app.pivo.android.basicsdkdemo"
-        minSdkVersion 21
-        targetSdkVersion 31
+        namespace "app.pivo.android.basicsdkdemo"
+        minSdk 21
+        targetSdk 35
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        viewBinding = true
+        buildConfig = true
     }
 
     buildTypes {
@@ -32,22 +36,17 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'androidx.core:core-ktx:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
 
     /**
      * Unit testing dependencies
      */
-    testImplementation 'junit:junit:4.13'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-
-    /**
-     * Android runtime permission handler
-     */
-    implementation 'com.nabinbhandari.android:permissions:3.8'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
 
     /**
      * Pivo pod controller dependencies
@@ -57,7 +56,7 @@ dependencies {
     /**
      * RxJava dependencies
      */
-    implementation "io.reactivex.rxjava2:rxjava:2.2.19"
+    implementation "io.reactivex.rxjava2:rxjava:2.2.21"
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
     implementation 'io.reactivex.rxjava2:rxkotlin:2.4.0'
 
@@ -72,12 +71,12 @@ dependencies {
      * RxAndroidBle is a powerful painkiller for Android's Bluetooth Low Energy headaches
      * https://github.com/Polidea/RxAndroidBle
      */
-    implementation 'com.polidea.rxandroidble2:rxandroidble:1.17.2'
+    implementation 'com.polidea.rxandroidble2:rxandroidble:1.18.1'
     implementation 'com.jakewharton.rx2:replaying-share-kotlin:2.2.0'
 
     /**
      * Coroutine dependencies
      */
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0-RC.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
 }
