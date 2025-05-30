@@ -11,10 +11,13 @@ import androidx.appcompat.app.AppCompatActivity
 import app.pivo.android.basicsdk.PivoSdk
 import app.pivo.android.basicsdk.events.PivoEvent
 import app.pivo.android.basicsdk.events.PivoEventBus
-import kotlinx.android.synthetic.main.activity_pivo_controller.*
+import app.pivo.android.basicsdkdemo.databinding.ActivityPivoControllerBinding
 
 @SuppressLint("SetTextI18n")
 class PivoControllerActivity : AppCompatActivity() {
+
+    private var _binding: ActivityPivoControllerBinding? = null
+    private val binding get() = _binding!!
 
     private val tag = "PivoControllerActivity"
     private var position = 0
@@ -22,85 +25,110 @@ class PivoControllerActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_pivo_controller)
+
+        _binding = ActivityPivoControllerBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         //get Pivo supported speed list
         val speedList = sdkInstance.getSupportedSpeeds().toMutableList()
 
-        //show pivo version
-        version_view.text = "Pivo Type: ${sdkInstance.getVersion()?.pivoType}\nVersion: ${sdkInstance.getVersion()?.version}"
+        with(binding) {
+            //show pivo version
+            versionView.text =
+                "Pivo Type: ${sdkInstance.getVersion()?.pivoType}\nVersion: ${sdkInstance.getVersion()?.version}"
 
-        //rotate continuously to left
-        btn_left_con_turn.setOnClickListener { sdkInstance.turnLeftContinuously(speedList[position]) }
+            //rotate continuously to left
 
-        //rotate to left
-        btn_left_turn.setOnClickListener { sdkInstance.turnLeft(getAngle(), speedList[position]) }
+            btnLeftConTurn.setOnClickListener { sdkInstance.turnLeftContinuously(speedList[position]) }
 
-        //rotate continuously to right
-        btn_right_con_turn.setOnClickListener { sdkInstance.turnRightContinuously(speedList[position]) }
+            //rotate to left
+            btnLeftTurn.setOnClickListener { sdkInstance.turnLeft(getAngle(), speedList[position]) }
 
-        //rotate to right
-        btn_right_turn.setOnClickListener { sdkInstance.turnRight(getAngle(), speedList[position]) }
+            //rotate continuously to right
+            btnRightConTurn.setOnClickListener { sdkInstance.turnRightContinuously(speedList[position]) }
 
-        //stop rotating the device
-        btn_stop.setOnClickListener { sdkInstance.stop() }
+            //rotate to right
+            btnRightTurn.setOnClickListener { sdkInstance.turnRight(getAngle(), speedList[position]) }
 
-        //change Pivo name
-        btn_change_name.setOnClickListener {
-            if (input_pivo_name.text.isNotEmpty()){
-                sdkInstance.changeName(input_pivo_name.text.toString())
+            //stop rotating the device
+            btnStop.setOnClickListener { sdkInstance.stop() }
+
+            //change Pivo name
+            btnChangeName.setOnClickListener {
+                if (inputPivoName.text.isNotEmpty()) {
+                    sdkInstance.changeName(inputPivoName.text.toString())
+                }
+            }
+
+            sdkInstance.getDeviceInfo()?.getName()?.let {
+                inputPivoName.setText(it)
+            }
+
+            //speed list view
+
+            speedListView.adapter = ArrayAdapter(this@PivoControllerActivity, android.R.layout.simple_spinner_item, speedList)
+            speedListView.onItemSelectedListener = object : OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    itemPosition: Int,
+                    id: Long
+                ) {
+                    position = itemPosition
+                    Log.e(
+                        tag,
+                        "onSpeedChange: ${speedList[position]} save: ${saveSpeedView.isChecked}"
+                    )
+                    sdkInstance.setSpeed(speedList[position])
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
         }
 
-        sdkInstance.getDeviceInfo()?.getName()?.let {
-            input_pivo_name.setText(it)
-        }
 
-        //speed list view
-        speed_list_view.adapter= ArrayAdapter(this, android.R.layout.simple_spinner_item, speedList)
-        speed_list_view.onItemSelectedListener = object : OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, itemPosition: Int, id: Long) {
-                position = itemPosition
-                Log.e(tag, "onSpeedChange: ${speedList[position]} save: ${save_speed_view.isChecked}")
-                sdkInstance.setSpeed(speedList[position])
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
     }
 
     override fun onResume() {
         super.onResume()
         //subscribe to connection failure event
-        PivoEventBus.subscribe(PivoEventBus.CONNECTION_FAILURE,this) {
+        PivoEventBus.subscribe(PivoEventBus.CONNECTION_FAILURE, this) {
             if (it is PivoEvent.ConnectionFailure) {
                 finish()
             }
         }
+        val notification_view = binding.notificationView
         //subscribe pivo remote controller event
         PivoEventBus.subscribe(PivoEventBus.REMOTE_CONTROLLER, this) {
             when (it) {
                 is PivoEvent.RCCamera -> notification_view.text =
                     "CAMERA state: ${if (it.state == 0) "Press" else "Release"}"
+
                 is PivoEvent.RCMode -> notification_view.text =
                     "MODE: ${if (it.state == 0) "Press" else "Release"}"
+
                 is PivoEvent.RCStop -> notification_view.text =
                     "STOP: ${if (it.state == 0) "Press" else "Release"}"
+
                 is PivoEvent.RCRightContinuous -> notification_view.text =
                     "RIGHT_CONTINUOUS: ${if (it.state == 0) "Press" else "Release"}"
+
                 is PivoEvent.RCLeftContinuous -> notification_view.text =
                     "LEFT_CONTINUOUS: ${if (it.state == 0) "Press" else "Release"}"
+
                 is PivoEvent.RCLeft -> notification_view.text =
                     "LEFT: ${if (it.state == 0) "Press" else "Release"}"
+
                 is PivoEvent.RCRight -> notification_view.text =
                     "RIGHT: ${if (it.state == 0) "Press" else "Release"}"
+
                 is PivoEvent.RCSpeed -> notification_view.text =
                     "SPEED: : ${if (it.state == 0) "Press" else "Release"} speed: ${it.level}"
             }
         }
         //subscribe to name change event
         PivoEventBus.subscribe(PivoEventBus.NAME_CHANGED, this) {
-            if (it is PivoEvent.NameChanged){
+            if (it is PivoEvent.NameChanged) {
                 notification_view.text = "Name: ${it.name}"
             }
         }
@@ -132,11 +160,11 @@ class PivoControllerActivity : AppCompatActivity() {
         sdkInstance.disconnect()
     }
 
-    private fun getAngle():Int{
+    private fun getAngle(): Int {
         return try {
-            val num = angle_view.text.toString()
+            val num = binding.angleView.text.toString()
             num.toInt()
-        }catch (e:NumberFormatException){
+        } catch (e: NumberFormatException) {
             90
         }
     }

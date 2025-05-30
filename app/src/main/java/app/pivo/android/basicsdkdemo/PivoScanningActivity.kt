@@ -13,9 +13,11 @@ import com.nabinbhandari.android.permissions.Permissions
 import app.pivo.android.basicsdk.PivoSdk
 import app.pivo.android.basicsdk.events.PivoEventBus
 import app.pivo.android.basicsdk.events.PivoEvent
-import kotlinx.android.synthetic.main.activity_pivo_scanning.*
+import app.pivo.android.basicsdkdemo.databinding.ActivityPivoScanningBinding
 
 class PivoScanningActivity : AppCompatActivity() {
+    private var _binding: ActivityPivoScanningBinding? = null
+    private val binding get() = _binding!!
 
     private val TAG = "MainActivity"
     private lateinit var resultAdapter: ScanResultsAdapter
@@ -23,7 +25,10 @@ class PivoScanningActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_pivo_scanning)
+        _binding = ActivityPivoScanningBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        val scan_results = binding.scanResults
 
         //initialize device scan adapter
         resultAdapter = ScanResultsAdapter()
@@ -44,12 +49,12 @@ class PivoScanningActivity : AppCompatActivity() {
             adapter = resultAdapter
         }
         //start scanning button
-        scan_button.setOnClickListener {
+        binding.scanButton.setOnClickListener {
             checkPermission()
         }
         //cancel scanning button
-        cancel_button.setOnClickListener {
-            scanning_bar.visibility = View.INVISIBLE
+        binding.cancelButton.setOnClickListener {
+            binding.scanningBar.visibility = View.INVISIBLE
             sdkInstance.stopScan()
             resultAdapter.clearScanResults()
         }
@@ -62,7 +67,7 @@ class PivoScanningActivity : AppCompatActivity() {
         PivoEventBus.subscribe(
             PivoEventBus.CONNECTION_COMPLETED, this
         ) {
-            scanning_bar.visibility = View.INVISIBLE
+            binding.scanningBar.visibility = View.INVISIBLE
             if (it is PivoEvent.ConnectionComplete) {
                 Log.e(TAG, "CONNECTION_COMPLETED")
                 openController()
@@ -95,7 +100,7 @@ class PivoScanningActivity : AppCompatActivity() {
             permissionList.toTypedArray(), null, null,
             object : PermissionHandler() {
                 override fun onGranted() {
-                    scanning_bar.visibility = View.VISIBLE
+                    binding.scanningBar.visibility = View.VISIBLE
                     sdkInstance.scan()
                 }
             })
