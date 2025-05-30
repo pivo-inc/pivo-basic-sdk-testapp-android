@@ -1,11 +1,11 @@
-package app.pivo.android.basicsdkdemo
+package app.pivo.android.basicsdkdemo.presentation.pivocontrol
 
+import android.R
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.AdapterView
-import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import app.pivo.android.basicsdk.PivoSdk
@@ -21,7 +21,7 @@ class PivoControllerActivity : AppCompatActivity() {
 
     private val tag = "PivoControllerActivity"
     private var position = 0
-    private val sdkInstance = PivoSdk.getInstance()
+    private val sdkInstance = PivoSdk.Companion.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,8 +66,9 @@ class PivoControllerActivity : AppCompatActivity() {
 
             //speed list view
 
-            speedListView.adapter = ArrayAdapter(this@PivoControllerActivity, android.R.layout.simple_spinner_item, speedList)
-            speedListView.onItemSelectedListener = object : OnItemSelectedListener {
+            speedListView.adapter =
+                ArrayAdapter(this@PivoControllerActivity, R.layout.simple_spinner_item, speedList)
+            speedListView.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
                     parent: AdapterView<*>?,
                     view: View?,

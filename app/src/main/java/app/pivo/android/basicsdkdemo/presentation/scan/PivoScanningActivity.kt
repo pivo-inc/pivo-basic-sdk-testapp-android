@@ -1,4 +1,4 @@
-package app.pivo.android.basicsdkdemo
+package app.pivo.android.basicsdkdemo.presentation.scan
 
 import android.Manifest
 import android.content.Intent
@@ -14,6 +14,7 @@ import app.pivo.android.basicsdk.PivoSdk
 import app.pivo.android.basicsdk.events.PivoEventBus
 import app.pivo.android.basicsdk.events.PivoEvent
 import app.pivo.android.basicsdkdemo.databinding.ActivityPivoScanningBinding
+import app.pivo.android.basicsdkdemo.presentation.pivocontrol.PivoControllerActivity
 
 class PivoScanningActivity : AppCompatActivity() {
     private var _binding: ActivityPivoScanningBinding? = null

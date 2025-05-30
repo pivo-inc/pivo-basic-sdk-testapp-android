@@ -10,7 +10,7 @@ import java.io.InputStreamReader
 /**
  * Created by murodjon on 2020/04/01
  */
-class App: Application()
+class PivoSdkTestApplication: Application()
 {
     override fun onCreate() {
         super.onCreate()
