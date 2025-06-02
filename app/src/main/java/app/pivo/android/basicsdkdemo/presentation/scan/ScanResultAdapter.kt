@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import app.pivo.android.basicsdkdemo.R
-import app.pivo.android.sdk.model.PivoDevice
+import app.pivo.android.basicsdkdemo.presentation.scan.model.PivoDeviceItem
 import java.util.*
 
 /**
@@ -15,54 +15,50 @@ import java.util.*
  */
 
 class ScanResultsAdapter : RecyclerView.Adapter<ScanResultsAdapter.ViewHolder?>() {
-    private val TAG = "ScanResultsAdapter"
+    private val data = mutableListOf<PivoDeviceItem>()
+    private var onAdapterItemClickListener: OnAdapterItemClickListener? = null
 
-    class ViewHolder(itemView: View) :
-        RecyclerView.ViewHolder(itemView) {
-        var deviceNAme: TextView
-        init {
-            deviceNAme = itemView.findViewById(R.id.device_item_view)
-        }
+    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        var deviceNAme: TextView = itemView.findViewById(R.id.device_item_view)
     }
 
     interface OnAdapterItemClickListener {
         fun onAdapterViewClick(view: View?)
     }
 
-    private var data: MutableList<PivoDevice> = ArrayList()
-
-    private var onAdapterItemClickListener: OnAdapterItemClickListener? = null
-
-    private val onClickListener =
-        View.OnClickListener { v ->
-            if (onAdapterItemClickListener != null) {
-                onAdapterItemClickListener!!.onAdapterViewClick(v)
-            }
-        }
-
-    fun addAllScanResults(bleScanResult: ArrayList<PivoDevice>?) {
-        data = ArrayList()
-        data.addAll(bleScanResult!!)
-        Collections.sort(data,
-            SORTING_COMPARATOR
-        )
-        notifyDataSetChanged()
+    private val onClickListener = View.OnClickListener { v ->
+        onAdapterItemClickListener?.onAdapterViewClick(v)
     }
 
-    fun addScanResult(scanDevice: PivoDevice) {
-        Log.e( TAG,"Found: ${scanDevice.name}")
-        for (i in data.indices) {
-            if (data[i].macAddress == scanDevice.macAddress) {
-                data[i] = scanDevice
-                notifyItemChanged(i)
-                return
+    fun addScanResult(scanDevice: PivoDeviceItem) {
+        Log.e(TAG, "Found: ${scanDevice.name}")
+        val now = System.currentTimeMillis()
+        scanDevice.lastScanTime = now
+
+        val index = data.indexOfFirst { it.macAddress == scanDevice.macAddress }
+
+        if (index >= 0) {
+            data[index] = scanDevice
+            notifyItemChanged(index)
+            return
+        }
+
+        data.add(scanDevice)
+        data.sortWith(SORTING_COMPARATOR)
+        notifyItemInserted(data.indexOf(scanDevice))
+    }
+
+    fun removeStaleDevices(timeoutMillis: Long = 3000L) {
+        val now = System.currentTimeMillis()
+        val iterator = data.listIterator()
+        while (iterator.hasNext()) {
+            val index = iterator.nextIndex()
+            val device = iterator.next()
+            if (now - device.lastScanTime > timeoutMillis) {
+                iterator.remove()
+                notifyItemRemoved(index)
             }
         }
-        data.add(scanDevice)
-        Collections.sort(data,
-            SORTING_COMPARATOR
-        )
-        notifyDataSetChanged()
     }
 
     fun clearScanResults() {
@@ -70,25 +66,24 @@ class ScanResultsAdapter : RecyclerView.Adapter<ScanResultsAdapter.ViewHolder?>(
         notifyDataSetChanged()
     }
 
-    fun getItemAtPosition(childAdapterPosition: Int): PivoDevice? {
-        return if (data.size >= childAdapterPosition && childAdapterPosition >= 0) data[childAdapterPosition] else null
+    fun getItemAtPosition(childAdapterPosition: Int): PivoDeviceItem? {
+        return data.getOrNull(childAdapterPosition)
     }
 
-    override fun getItemCount(): Int {
-        return data.size
-    }
+    override fun getItemCount() = data.size
 
     override fun onBindViewHolder(
         holder: ViewHolder,
         position: Int
     ) {
         val result = data[position]
-        holder.deviceNAme.text = String.format(Locale.getDefault(), "%s", result.name)
+        holder.deviceNAme.text = result.name ?: "Unknown"
     }
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
-        viewType: Int): ViewHolder {
+        viewType: Int
+    ): ViewHolder {
         val itemView: View = LayoutInflater.from(parent.context)
             .inflate(R.layout.device_item, parent, false)
         itemView.setOnClickListener(onClickListener)
@@ -102,8 +97,9 @@ class ScanResultsAdapter : RecyclerView.Adapter<ScanResultsAdapter.ViewHolder?>(
     }
 
     companion object {
+        private const val TAG = "ScanResultsAdapter"
         private val SORTING_COMPARATOR =
-            Comparator { lhs: PivoDevice, rhs: PivoDevice ->
+            Comparator { lhs: PivoDeviceItem, rhs: PivoDeviceItem ->
                 lhs.macAddress.compareTo(rhs.macAddress)
             }
     }
