@@ -30,6 +30,6 @@
     <string name="right"><![CDATA[>]]></string>
     <string name="rright"><![CDATA[>>]]></string>
 
-    <string name="enable_bypass">Disable Remote Control</string>
-    <string name="disable_bypass">Enable Remote Control</string>
+    <string name="disable_remote_control">Disable Remote Control</string>
+    <string name="enable_remote_control">Enable Remote Control</string>
 </resources>
