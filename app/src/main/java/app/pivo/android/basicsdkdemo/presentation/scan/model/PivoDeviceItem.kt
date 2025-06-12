@@ -14,7 +14,8 @@ data class PivoDeviceItem(
     fun toPivoDevice() = PivoDevice(
         name = name,
         macAddress = macAddress,
-        pivoType = pivoType
+        pivoType = pivoType,
+        uuid = ""
     )
 
     companion object {

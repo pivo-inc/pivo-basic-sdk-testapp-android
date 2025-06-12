@@ -111,7 +111,7 @@ class PivoScanningActivity : AppCompatActivity() {
             val internal = 500L
             while (isActive) {
                 delay(internal)
-                resultAdapter.removeStaleDevices(internal)
+                resultAdapter.removeStaleDevices()
             }
         }
     }
