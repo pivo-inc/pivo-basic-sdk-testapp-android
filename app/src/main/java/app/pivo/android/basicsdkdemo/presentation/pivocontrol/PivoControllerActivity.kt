@@ -29,6 +29,27 @@ class PivoControllerActivity : AppCompatActivity() {
         _binding = ActivityPivoControllerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        initializeUi()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        subscribePivoEvents()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        //unregister before stopping the activity
+        PivoEventBus.unregister(this)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        //disconnect pod connection
+        sdkInstance.disconnect()
+    }
+
+    private fun initializeUi() {
         //get Pivo supported speed list
         val speedList = sdkInstance.getSupportedSpeeds().toMutableList()
 
@@ -67,7 +88,7 @@ class PivoControllerActivity : AppCompatActivity() {
             //speed list view
 
             speedListView.adapter =
-                ArrayAdapter(this@PivoControllerActivity, R.layout.simple_spinner_item, speedList)
+                ArrayAdapter(this@PivoControllerActivity, android.R.layout.simple_spinner_item, speedList)
             speedListView.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
                     parent: AdapterView<*>?,
@@ -77,7 +98,7 @@ class PivoControllerActivity : AppCompatActivity() {
                 ) {
                     position = itemPosition
                     Log.e(
-                        tag,
+                        TAG,
                         "onSpeedChange: ${speedList[position]} save: ${saveSpeedView.isChecked}"
                     )
                     sdkInstance.setSpeed(speedList[position])
@@ -102,63 +123,51 @@ class PivoControllerActivity : AppCompatActivity() {
         //subscribe pivo remote controller event
         PivoEventBus.subscribe(PivoEventBus.REMOTE_CONTROLLER, this) {
             when (it) {
-                is PivoEvent.RCCamera -> notification_view.text =
-                    "CAMERA state: ${if (it.state == 0) "Press" else "Release"}"
+                is PivoEvent.RCCamera -> notificationView.text =
+                    "CAMERA state: ${if (it.state == 0) "Release" else "Press"}"
 
-                is PivoEvent.RCMode -> notification_view.text =
-                    "MODE: ${if (it.state == 0) "Press" else "Release"}"
+                is PivoEvent.RCMode -> notificationView.text =
+                    "MODE: ${if (it.state == 0) "Release" else "Press"}"
 
-                is PivoEvent.RCStop -> notification_view.text =
-                    "STOP: ${if (it.state == 0) "Press" else "Release"}"
+                is PivoEvent.RCStop -> notificationView.text =
+                    "STOP: ${if (it.state == 0) "Release" else "Press"}"
 
-                is PivoEvent.RCRightContinuous -> notification_view.text =
-                    "RIGHT_CONTINUOUS: ${if (it.state == 0) "Press" else "Release"}"
+                is PivoEvent.RCRightContinuous -> notificationView.text =
+                    "RIGHT_CONTINUOUS: ${if (it.state == 0) "Release" else "Press"}"
 
-                is PivoEvent.RCLeftContinuous -> notification_view.text =
-                    "LEFT_CONTINUOUS: ${if (it.state == 0) "Press" else "Release"}"
+                is PivoEvent.RCLeftContinuous -> notificationView.text =
+                    "LEFT_CONTINUOUS: ${if (it.state == 0) "Release" else "Press"}"
 
-                is PivoEvent.RCLeft -> notification_view.text =
-                    "LEFT: ${if (it.state == 0) "Press" else "Release"}"
+                is PivoEvent.RCLeft -> notificationView.text =
+                    "LEFT: ${if (it.state == 0) "Release" else "Press"}"
 
-                is PivoEvent.RCRight -> notification_view.text =
-                    "RIGHT: ${if (it.state == 0) "Press" else "Release"}"
+                is PivoEvent.RCRight -> notificationView.text =
+                    "RIGHT: ${if (it.state == 0) "Release" else "Press"}"
 
-                is PivoEvent.RCSpeed -> notification_view.text =
-                    "SPEED: : ${if (it.state == 0) "Press" else "Release"} speed: ${it.level}"
+                is PivoEvent.RCSpeed -> notificationView.text =
+                    "SPEED: : ${if (it.state == 0) "Release" else "Press"} speed: ${it.level}"
             }
         }
         //subscribe to name change event
         PivoEventBus.subscribe(PivoEventBus.NAME_CHANGED, this) {
             if (it is PivoEvent.NameChanged) {
-                notification_view.text = "Name: ${it.name}"
+                notificationView.text = "Name: ${it.name}"
             }
         }
         //subscribe to mac address event
         PivoEventBus.subscribe(PivoEventBus.MAC_ADDRESS, this) {
             if (it is PivoEvent.MacAddress) {
-                notification_view.text = "Mac address: ${it.macAddress}"
+                notificationView.text = "Mac address: ${it.macAddress}"
             }
         }
         //subscribe to get pivo notifications
         PivoEventBus.subscribe(PivoEventBus.PIVO_NOTIFICATION, this) {
             if (it is PivoEvent.BatteryChanged) {
-                notification_view.text = "BatteryLevel: ${it.level}"
+                notificationView.text = "BatteryLevel: ${it.level}"
             } else {
-                notification_view.text = "Notification Received"
+                notificationView.text = "Notification Received"
             }
         }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        //unregister before stopping the activity
-        PivoEventBus.unregister(this)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        //disconnect pod connection
-        sdkInstance.disconnect()
     }
 
     private fun getAngle(): Int {
@@ -168,5 +177,9 @@ class PivoControllerActivity : AppCompatActivity() {
         } catch (e: NumberFormatException) {
             90
         }
+    }
+
+    companion object {
+        const val TAG = "PivoControllerActivity"
     }
 }
