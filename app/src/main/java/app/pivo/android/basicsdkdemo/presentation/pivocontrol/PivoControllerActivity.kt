@@ -1,6 +1,5 @@
 package app.pivo.android.basicsdkdemo.presentation.pivocontrol
 
-import android.R
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
@@ -11,6 +10,8 @@ import androidx.appcompat.app.AppCompatActivity
 import app.pivo.android.basicsdk.PivoSdk
 import app.pivo.android.basicsdk.events.PivoEvent
 import app.pivo.android.basicsdk.events.PivoEventBus
+import app.pivo.android.basicsdk.util.RemoteControlMode
+import app.pivo.android.basicsdkdemo.R
 import app.pivo.android.basicsdkdemo.databinding.ActivityPivoControllerBinding
 
 @SuppressLint("SetTextI18n")
@@ -19,9 +20,9 @@ class PivoControllerActivity : AppCompatActivity() {
     private var _binding: ActivityPivoControllerBinding? = null
     private val binding get() = _binding!!
 
-    private val tag = "PivoControllerActivity"
     private var position = 0
     private val sdkInstance = PivoSdk.Companion.getInstance()
+    private var enableRemoteController = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,6 +82,14 @@ class PivoControllerActivity : AppCompatActivity() {
                 }
             }
 
+            /**
+             * Toggle remote controller mode (enable/disable)
+             * Result will be returned via PivoEventBus.REMOTE_CONTROLLER_MODE as PivoEvent.RemoteControllerState
+             * */
+            btnBypass.setOnClickListener {
+                PivoSdk.getInstance().enableRemoteController(if (enableRemoteController) RemoteControlMode.DISABLED else RemoteControlMode.ENABLED)
+            }
+
             sdkInstance.getDeviceInfo()?.getName()?.let {
                 inputPivoName.setText(it)
             }
@@ -107,19 +116,34 @@ class PivoControllerActivity : AppCompatActivity() {
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
         }
-
-
     }
 
-    override fun onResume() {
-        super.onResume()
+    private fun subscribePivoEvents() {
+        val notificationView = binding.notificationView
+
         //subscribe to connection failure event
         PivoEventBus.subscribe(PivoEventBus.CONNECTION_FAILURE, this) {
             if (it is PivoEvent.ConnectionFailure) {
                 finish()
             }
         }
-        val notification_view = binding.notificationView
+
+        /**
+         * Subscribe to Remote Controller Mode
+         * This event is triggered when the remote controller mode is changed.
+         * */
+        PivoEventBus.subscribe(PivoEventBus.REMOTE_CONTROLLER_MODE, this) {
+            if (it is PivoEvent.RemoteControllerState) {
+                enableRemoteController = it.mode == RemoteControlMode.ENABLED
+                val remoteControllerText = if (enableRemoteController) {
+                    getString(R.string.disable_bypass)
+                } else {
+                    getString(R.string.enable_bypass)
+                }
+                binding.btnBypass.text = remoteControllerText
+            }
+        }
+
         //subscribe pivo remote controller event
         PivoEventBus.subscribe(PivoEventBus.REMOTE_CONTROLLER, this) {
             when (it) {
